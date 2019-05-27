@@ -13,7 +13,7 @@
 #include "BLEDevice.h"
 //#include "BLEScan.h"
 
-#define UPDATE_TIME  30000
+#define UPDATE_TIME  120000
 #define UPDATE_LIMIT 60000
 
 static BLEUUID advertisedUUID("0000180f-0000-1000-8000-00805f9b34fb");
@@ -137,6 +137,15 @@ static void scanCompleteCB(BLEScanResults scanResults) {
   doConnect = true;
 }
 
+static void scanDevices() {
+  count = 0;
+  current = 0;
+  BLEScan* pBLEScan = BLEDevice::getScan();
+  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+  pBLEScan->setActiveScan(true);
+  pBLEScan->start(30, scanCompleteCB);
+}
+
 void setup() {
   Serial.begin(115200);
 
@@ -151,12 +160,7 @@ void setup() {
   // Retrieve a Scanner and set the callback we want to use to be informed when we
   // have detected a new device.  Specify that we want active scanning and start the
   // scan to run for 30 seconds.
-  count = 0;
-  current = 0;
-  BLEScan* pBLEScan = BLEDevice::getScan();
-  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
-  pBLEScan->setActiveScan(true);
-  pBLEScan->start(30, scanCompleteCB);
+  scanDevices();
 } // End of setup.
 
 
@@ -180,7 +184,7 @@ void loop() {
 
   delay(1000); // Delay a second between loops.
   if (millis() - lastUpdate  > UPDATE_TIME) {
-    //doConnect = true;
+    scanDevices();
   }
   if (millis() - lastUpdate > UPDATE_LIMIT) {
     //resetModule();
